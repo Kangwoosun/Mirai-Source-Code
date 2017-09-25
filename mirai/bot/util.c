@@ -231,7 +231,7 @@ int util_stristr(char *haystack, int haystack_len, char *str)
     return -1;
 }
 
-ipv4_t util_local_addr(void)
+ipv4_t util_local_addr(void) // 자기 자신의 IP를 얻는 함수
 {
     int fd;
     struct sockaddr_in addr;
